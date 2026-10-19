@@ -30,7 +30,7 @@ The function that discovers buildable inputs however can be changed. (Burrow wil
 
 ### Discovery.
 
-In its default state, all builders will use the [`lib.discover`](lib/discovery.nix#L37-L107) function.
+In its default state, all builders will use the [`lib.discover`](lib/discover.nix#L37-L107) function.
 This function crawls the search paths like so.
 
 ```
@@ -41,4 +41,4 @@ L obj1/      : A buildable object. this will be passed to the build functions.
 | ...        : This patten can continue on with subdirectories of the search path being the locations of buildable objects.
 ```
 
-The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discovery.nix#L37-l107)
+The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix#L37-l107)
