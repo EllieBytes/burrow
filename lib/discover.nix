@@ -62,7 +62,13 @@ rec {
 
           meta =
             (evalMeta {
-              inherit inputs outputs extraSpecialArgs;
+              inherit
+                name
+                inputs
+                outputs
+                extraSpecialArgs
+                ;
+
               modules = modules ++ [
                 topLevel
                 found

@@ -1,12 +1,11 @@
 { lib, self }:
 
 let
-  inherit (lib) mapAttrs;
+  inherit (lib) mapAttrs genAttrs;
   inherit (self) identity;
 
   inherit (builtins)
     attrNames
-    genAttrs
     hasAttr
     head
     isAttrs

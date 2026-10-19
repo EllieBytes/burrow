@@ -20,6 +20,12 @@ in
     }:
     {
       options = {
+        enable = mkOption {
+          type = types.bool;
+          default = true;
+          example = false;
+        };
+
         name = mkOption {
           type = types.str;
           default = name;
@@ -63,6 +69,14 @@ in
         aggregateFunctions = mkOption {
           type = lazyAttrsOf (functionTo types.attrs);
           default = { };
+        };
+
+        extraSpecialArgs = mkOption {
+          type = lazyAttrsOf types.unspecified;
+          default = { };
+          description = ''
+            Extra args to pass to meta.nix files.
+          '';
         };
 
         discoveryFunction = mkOption {

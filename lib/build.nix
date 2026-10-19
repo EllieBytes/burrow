@@ -9,6 +9,7 @@ let
     pathExists
     traceVerbose
     filter
+    mapAttrs
     ;
 
   inherit (lib) mapAttrsToList;
@@ -18,8 +19,8 @@ in
   build = rec {
     normalizeSearchPaths =
       root:
-      map (
-        cur:
+      mapAttrs (
+        name: cur:
         if isString cur then
           if pathExists (root + "/${cur}") then
             (root + "/${cur}")
@@ -45,14 +46,14 @@ in
                   inherit (builder) modules extraSpecialArgs;
                 }
               )
-            ) (normalizeSearchPaths burrow.root (attrValues builder.searchPaths));
+            ) (attrValues (normalizeSearchPaths burrow.root builder.searchPaths));
           in
           concatMap (targetCtx: mapAttrsToList (_: f: f targetCtx) builder.buildFunctions) discovered
-        ) (attrValues burrow.builders);
+        ) builders;
 
         aggregateOutputs = concatMap (
           builder: mapAttrsToList (_: f: f builtOutputs) builder.aggregateFunctions
-        ) (attrValues burrow.builders);
+        ) builders;
       in
       foldl' lazyMerge { } (builtOutputs ++ aggregateOutputs);
   };

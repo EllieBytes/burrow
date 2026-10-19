@@ -6,8 +6,14 @@
 }:
 
 let
+  inherit (builtins) filter;
   inherit (lib) mkOption types;
-  inherit (types) attrsOf submodule listOf;
+  inherit (types)
+    attrsOf
+    submodule
+    listOf
+    either
+    ;
 in
 {
   options.burrow = {
@@ -61,6 +67,11 @@ in
                   type = listOf types.str;
                 };
 
+                search_paths = mkOption {
+                  type = listOf (either types.str types.path);
+                  apply = filter (x: x == ../assets/blank);
+                };
+
                 description = mkOption {
                   type = types.str;
                 };
@@ -79,10 +90,6 @@ in
 
                 outputs = mkOption {
                   type = attrsOf types.str;
-                };
-
-                builder_opts = mkOption {
-                  type = types.attrs;
                 };
               };
             });

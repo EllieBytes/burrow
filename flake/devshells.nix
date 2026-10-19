@@ -4,6 +4,7 @@
       packages = with pkgs; [
         # General
         just
+        direnv
 
         # Nix
         nix
@@ -11,12 +12,6 @@
         nixfmt
         package-version-server
         statix
-
-        # Rust
-        gcc
-        rustc
-        cargo
-        clippy
       ];
     };
 
