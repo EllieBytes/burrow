@@ -23,7 +23,6 @@ in
 
     buildFunctions.home =
       {
-        name,
         meta,
         path,
         ...

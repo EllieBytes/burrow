@@ -1,4 +1,6 @@
 {
+  description = "An easy to use and extend nix flake auto-discovery framework.";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";

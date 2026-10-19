@@ -16,7 +16,7 @@ in
     home-manager = mkOption {
       type = nullOr types.raw;
       default = inputs.home-manager or null;
-      exampleText = "inputs.home-manager";
+      example = lib.literalExpression "inputs.home-manager";
       description = ''
         Home-manager input to use.
       '';

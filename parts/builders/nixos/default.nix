@@ -9,24 +9,12 @@ let
     pathExists
     listToAttrs
     match
-    elemAt
     ;
 
   inherit (lib) mkOption types optionals;
 
   re = "^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9\\..-]+)";
   isBound = name: (match re name) != null;
-  splitBound =
-    name:
-    assert isBound name;
-    let
-      split = match re name;
-    in
-    {
-      name = elemAt split 0;
-      host = elemAt split 0;
-    };
-
   bestUser =
     hostname: want:
     if (isBound want) then
@@ -44,6 +32,7 @@ in
       nixosConfigurations = "nixosConfigurations";
       hosts = "hosts";
       systems = "systems";
+      nixos = "nixos";
     };
 
     settingsModules = [
