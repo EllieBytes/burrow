@@ -1,7 +1,5 @@
 # Burrow
 <img src="assets/logo.svg" width="256" height="256">
-  Burrow logo
-</img>
 
 Burrow is an auto-discovery framework for Nix flakes, designed to be both easily usable and nearly infinitely extensible.
 
