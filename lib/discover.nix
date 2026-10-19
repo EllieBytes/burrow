@@ -51,7 +51,7 @@ rec {
     }:
     let
       ignored = d: pathExists (d + "/.burrow_skip");
-      meta = (if pathExists (dir + "/meta.nix") then import (dir + "/meta.nix") else { });
+      dlMeta = (if pathExists (dir + "/meta.nix") then import (dir + "/meta.nix") else { });
 
       nixFiles = attrNames (
         filterAttrs (
@@ -75,7 +75,7 @@ rec {
               extraSpecialArgs
               ;
 
-            modules = modules ++ [ meta ];
+            modules = modules ++ [ dlMeta ];
           };
         };
       }) nixFiles;
