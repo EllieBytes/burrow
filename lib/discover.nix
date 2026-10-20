@@ -1,7 +1,7 @@
 { lib, self, ... }:
 
 let
-  inherit (lib) mapAttrs;
+  inherit (lib) mapAttrs filterAttrs;
   inherit (self) deprioritize;
   inherit (self.fs) isHidden subdirNames;
 
@@ -10,7 +10,6 @@ let
     listToAttrs
     pathExists
     warn
-    filterAttrs
     match
     readDir
     elemAt
@@ -40,6 +39,24 @@ rec {
       } extraSpecialArgs;
     };
 
+  discoverHybrid = args@{
+    inputs ? {},
+    outputs ? {},
+    modules ? [],
+    extraSpecialArgs ? {},
+
+    dir
+  }:
+  let
+    ignored = d: pathExists (d + "/.burrow_skip");
+    unlessIgnored = d: v: if ignored d then {} else v;
+
+    f = discoverByFile args;
+    s = discover args;
+
+    combined = f // s;
+  in unlessIgnored dir combined;
+
   discoverByFile =
     {
       inputs ? { },
@@ -55,11 +72,11 @@ rec {
 
       nixFiles = attrNames (
         filterAttrs (
-          name: kind: (match "^(.+)\\.nix$" != null) && (kind == "regular" || kind == "symlink")
+          name: kind: (match "^(.+)\\.nix$" != null) && (kind == "regular" || kind == "symlink") && (!isHidden name)
         ) (readDir dir)
       );
 
-      toName = fname: elemAt (match "^(.+)\\.nix$") 0;
+      toName = fname: elemAt (match "^(.+)\\.nix$" fname) 0;
 
       all = map (file: {
         name = toName file;
@@ -67,7 +84,7 @@ rec {
           top = dir;
           path = dir + "/${file}";
           name = toName file;
-          meta = evalMeta {
+          meta = (evalMeta {
             inherit
               name
               inputs
@@ -76,7 +93,7 @@ rec {
               ;
 
             modules = modules ++ [ dlMeta ];
-          };
+          }).config;
         };
       }) nixFiles;
     in
@@ -129,12 +146,13 @@ rec {
           {
             inherit name meta;
             path = subdir;
+            top = dir;
           };
 
       found = map (name: {
         inherit name;
         path = dir + "/${name}";
-      }) (filter (x: !isHidden x) (subdirNames dir));
+      }) (filter (x: !isHidden x && !isNull x) (subdirNames dir));
     in
     if ignored dir then
       { }
