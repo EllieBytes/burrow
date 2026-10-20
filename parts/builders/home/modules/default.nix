@@ -75,6 +75,14 @@ in
       '';
     };
 
+    lib = mkOption {
+      type = types.unspecified;
+      default = config.pkgs.lib;
+      description = ''
+        The 'lib' to pass to this instance.
+      '';
+    };
+
     minimal = mkOption {
       type = types.bool;
       default = false;
