@@ -8,7 +8,7 @@
 
 let
   inherit (lib) mkOption types;
-  inherit (types) listOf lazyAttrsOf;
+  inherit (types) listOf lazyAttrsOf functionTo;
 in
 {
   options = {
