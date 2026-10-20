@@ -88,11 +88,19 @@ in
       type = types.raw;
       default =
         if inputs ? nixpkgs then
-          import inputs.nixpkgs {
-
-          }
+          import inputs.nixpkgs { }
         else
           throw "Could not find nixpkgs inputs to instance. Please add nixpkgs to your inputs or specify 'pkgs' manually.";
+    };
+
+    advanced = {
+      homeFn = mkOption {
+        type = functionTo types.unspecified;
+        default = config.home-manager.lib.homeManagerConfiguration;
+        description = ''
+          The function used to build the home-manager configuration.
+        '';
+      };
     };
   };
 }
