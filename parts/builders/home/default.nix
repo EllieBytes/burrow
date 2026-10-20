@@ -21,6 +21,12 @@ in
   burrow.builders.home = {
     modules = [ ./modules ];
 
+    searchPaths = lib.mkDefault {
+      home = "home";
+      users = "users";
+      homeConfigurations = "homeConfigurations";
+    };
+
     buildFunctions.home =
       {
         meta,
