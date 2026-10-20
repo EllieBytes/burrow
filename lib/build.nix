@@ -17,6 +17,20 @@ let
 in
 {
   build = rec {
+    /**
+      # normalizeSearchPaths
+
+      ```
+        normalizeSearchPaths :: Path -> { \${name} :: (Path | String) } -> { \${name} :: Path }
+      ```
+
+      Transforms a list of both absolute paths, and stringed relative paths into a list of only absolute paths.
+
+      Relative paths are resolved against a root path (first argument)
+      Nonexistent relative paths point to an empty directory.
+
+      Absolute paths are preserved.
+    */
     normalizeSearchPaths =
       root:
       mapAttrs (
@@ -30,6 +44,21 @@ in
           cur
       );
 
+    /**
+      # callBuilders
+
+      ```
+        callBuilders :: Attrs -> Attrs -> Attrs -> Attrs
+      ```
+
+      Entrypoint for the build engine.
+      Calls all builders in the specified burrow.
+      Produces an attrset of all builder outputs.
+
+      inputs: flake inputs.
+      outputs: location of actual flake outputs.
+      burrow: the burrow schema.
+    */
     callBuilders =
       inputs: outputs: burrow:
       let

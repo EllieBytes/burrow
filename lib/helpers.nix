@@ -9,8 +9,26 @@ let
     ;
 in
 rec {
+  /**
+    # `identity`
+
+    ```
+      identity :: Any -> Any
+    ```
+
+    Returns the first argument.
+  */
   identity = x: x;
 
+  /**
+    # `deprioritize`
+
+    ```
+      deprioritize :: Int -> Path -> DeferredModule
+    ```
+
+    Lowers the priority of an entire module. Items in the module with an existing override priority are preserved.
+  */
   deprioritize =
     priority: file: module:
     { lib, options, ... }@args:
@@ -62,6 +80,15 @@ rec {
       config = wrap [ ] rawConfig;
     };
 
+  /**
+    # `serializable`
+
+    ```
+      serializable :: Any -> Any
+    ```
+
+    Makes any value acceptable by `nix eval --json`
+  */
   serializable =
     value:
     if isAttrs value then

@@ -14,9 +14,27 @@ let
 
 in
 rec {
+  /**
+    # `lazySetAttrByPath`
+
+    ```
+      lazySetAttrByPath :: [ String ] -> Any -> Attrs
+    ```
+
+    Lazily sets an attribute in an attribute set by its path.
+  */
   lazySetAttrByPath =
     path: value: if path == [ ] then value else { ${head path} = lazySetAttrByPath (tail path) value; };
 
+  /**
+    # `lazyMerge`
+
+    ```
+      lazyMerge :: Attrs -> Attrs -> Attrs
+    ```
+
+    Lazily merges two attribute sets recursively.
+  */
   lazyMerge =
     lhs: rhs:
     if isAttrs lhs && isAttrs rhs then

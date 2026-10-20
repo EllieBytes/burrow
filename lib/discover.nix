@@ -18,6 +18,21 @@ let
 
 in
 rec {
+  /**
+    # `evalMeta`
+
+    ```
+      evalMeta :: {
+        name :: String,
+        inputs :: Attrs,
+        outputs :: Attrs,
+        modules :: [ DeferredModule ],
+        extraSpecialArgs :: Attrs
+      } -> Module
+    ```
+
+    Thin wrapper over lib.evalModules for meta.nix files.
+  */
   evalMeta =
     {
       name ? "",
@@ -36,9 +51,21 @@ rec {
           inputs
           outputs
           ;
+
       } extraSpecialArgs;
     };
 
+  /**
+    # `discoverHybrid`
+
+    ```
+      discoverHybrid :: DiscoveryArgs -> { \${name} :: { name :: Attrs, path :: Path, meta :: Attrs, top :: Path } }
+    ```
+
+    Discovery function running on both files and subdirectories.
+
+    (essentially a merge of discoverByFile & discover)
+  */
   discoverHybrid = args@{
     inputs ? {},
     outputs ? {},
@@ -57,6 +84,15 @@ rec {
     combined = f // s;
   in unlessIgnored dir combined;
 
+  /**
+    # `discoverByFile`
+
+    ```
+      discoverByFile :: DiscoveryArgs -> { \${name} :: { name :: String, path :: Path, meta :: Attrs, top :: Path } }
+    ```
+
+    Discovery function running towards just files
+  */
   discoverByFile =
     {
       inputs ? { },
@@ -72,7 +108,7 @@ rec {
 
       nixFiles = attrNames (
         filterAttrs (
-          name: kind: (match "^(.+)\\.nix$" != null) && (kind == "regular" || kind == "symlink") && (!isHidden name)
+          name: kind: (match "^(.+)\\.nix$" != null) && (kind == "regular" || kind == "symlink") && (!isHidden name) && (name != "meta.nix")
         ) (readDir dir)
       );
 
@@ -99,6 +135,15 @@ rec {
     in
     if ignored dir then { } else listToAttrs all;
 
+  /**
+    # `discover`
+
+    ```
+      discover :: DiscoveryArgs -> { \${name} :: { name :: String, path :: Path, modules :: Attrs, top :: Path } }
+    ```
+
+    The default discovery function, discovers by subdirectories
+  */
   discover =
     {
       inputs ? { },
