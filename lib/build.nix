@@ -10,6 +10,9 @@ let
     traceVerbose
     filter
     mapAttrs
+    attrNames
+    all
+    elem
     ;
 
   inherit (lib) mapAttrsToList;
@@ -64,13 +67,29 @@ in
       let
         builders = (filter (builder: builder.enable) (attrValues burrow.builders));
 
+        discoveryFn =
+          b:
+          let
+            required = attrNames {
+              inputs = true;
+              outputs = true;
+              modules = true;
+              extraSpecialArgs = true;
+              dir = true;
+            };
+          in
+          if (all (x: elem x required) (attrNames (builtins.functionArgs b.discoveryFunction.__functor))) then
+            b.discoveryFunction
+          else
+            throw "Invalid discovery function for ${b.name}";
+
         builtOutputs = concatMap (
           builder:
           let
             discovered = concatMap (
               dir:
               attrValues (
-                builder.discoveryFunction {
+                (discoveryFn builder) {
                   inherit dir inputs outputs;
                   inherit (builder) modules extraSpecialArgs;
                 }
@@ -80,8 +99,10 @@ in
           concatMap (targetCtx: mapAttrsToList (_: f: f targetCtx) builder.buildFunctions) discovered
         ) builders;
 
+        aggregateInputs = foldl' self.lazyMerge { } builtOutputs;
+
         aggregateOutputs = concatMap (
-          builder: mapAttrsToList (_: f: f builtOutputs) builder.aggregateFunctions
+          builder: mapAttrsToList (_: f: f aggregateInputs) builder.aggregateFunctions
         ) builders;
       in
       foldl' lazyMerge { } (builtOutputs ++ aggregateOutputs);

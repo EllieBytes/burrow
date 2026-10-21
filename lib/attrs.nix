@@ -1,8 +1,7 @@
-{ lib, self }:
+{ lib, ... }:
 
 let
   inherit (lib) mapAttrs genAttrs;
-  inherit (self) identity;
 
   inherit (builtins)
     attrNames
@@ -34,22 +33,28 @@ rec {
     ```
 
     Lazily merges two attribute sets recursively.
+    NOTE: this function stops at attrsets with `_type` and at derivations.
   */
   lazyMerge =
     lhs: rhs:
     if isAttrs lhs && isAttrs rhs then
       let
-        allKeys = genAttrs (attrNames lhs ++ attrNames rhs) identity;
+        allKeys = genAttrs (attrNames lhs ++ attrNames rhs) (x: x);
       in
-      mapAttrs (
-        k: _:
-        if hasAttr k lhs && hasAttr k rhs then
-          lazyMerge lhs."${k}" rhs."${k}"
-        else if hasAttr k lhs then
-          lhs."${k}"
-        else
-          rhs."${k}"
-      ) allKeys
+      if lhs ? _type || rhs ? _type then
+        rhs
+      else if (lib.isDerivation lhs) || (lib.isDerivation rhs) then
+        rhs
+      else
+        mapAttrs (
+          k: _:
+          if hasAttr k lhs && hasAttr k rhs then
+            lazyMerge lhs."${k}" rhs."${k}"
+          else if hasAttr k lhs then
+            lhs."${k}"
+          else
+            rhs."${k}"
+        ) allKeys
     else
       rhs;
 }

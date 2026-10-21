@@ -1,0 +1,9 @@
+(A) Create proper checks & CI
+(B) Add `packages` builder.
+(B) Add `modules` builder.
+(B) Add `darwin` builder.
+(B) Add `overlays` builder.
+(B) Add `checks` builder.
+(B) Add `deployment` aggregate builder.
+(E) Add ability to load meta.nix schemas from TOML (STARTED)
+(E) Make the discovery API more robust and defined, allowing generic crawlers as well as full discoveries.

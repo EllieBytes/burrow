@@ -1,4 +1,10 @@
-{ config, name, lib, inputs, ... }:
+{
+  config,
+  name,
+  lib,
+  inputs,
+  ...
+}:
 
 {
   options = {

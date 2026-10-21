@@ -6,7 +6,15 @@
   outputs =
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = [ inputs.burrow.flakeModule ];
+      imports = [
+        inputs.burrow.flakeModule
+      ];
+
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
       burrow.root = ./.;
     };
 }

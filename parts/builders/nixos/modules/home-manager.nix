@@ -49,7 +49,7 @@ in
     };
 
     modules = mkOption {
-      type = listOf types.deferredModules;
+      type = listOf types.deferredModule;
       default = [ ];
       description = ''
         Modules to pass to the configuration.

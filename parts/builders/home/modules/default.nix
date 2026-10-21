@@ -23,8 +23,8 @@ in
     home-manager = mkOption {
       type = types.raw;
       default =
-        inputs.home-manager or (throw
-          "Could not find input home-manager. please add home-manager to your inputs, or specify an input to use");
+        inputs.home-manager
+          or (throw "Could not find input home-manager. please add home-manager to your inputs, or specify an input to use");
     };
 
     system = mkOption {
