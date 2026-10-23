@@ -7,7 +7,7 @@ Burrow is built to solve nearly every problem I have with flakes & existing auto
 
 * Monolithic flakes.
 * Auto-discovery systems forcing you to a strict convention.
-* Auto-discovery systems not allowing cusomization of outputs.
+* Auto-discovery systems being to opaque to support easy extensions.
 * Auto-discovery systems only pertaining to one type of output (nixos host, packages, etc...)
 
 ## How it works.
@@ -30,7 +30,7 @@ The function that discovers buildable inputs however can be changed. (Burrow wil
 
 ### Discovery.
 
-In its default state, all builders will use the [`lib.discover`](lib/discover.nix#L37-L107) function.
+In its default state, all builders will use the [`lib.discover`](lib/discover.nix#L249-L327) function.
 This function crawls the search paths like so.
 
 ```
@@ -41,4 +41,4 @@ L obj1/      : A buildable object. this will be passed to the build functions.
 | ...        : This patten can continue on with subdirectories of the search path being the locations of buildable objects.
 ```
 
-The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix#L37-l107)
+The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix#L249-l327)

@@ -36,7 +36,7 @@ in
 
     buildFunctions.modules = { meta, path, ... }: {
       "${meta.namespace}"."${meta.name}" =
-        if readFileType == "directory" then
+        if (readFileType path) == "directory" then
           let
             mods = matchEnum meta.scope {
               "default" = (if pathExists (path + "/default.nix") then [ (path + "/default.nix") ] else [ ]);
@@ -48,7 +48,9 @@ in
             imports = mods ++ meta.extraModules;
           }
         else
-          { };
+          {
+            imports = [ path ] ++ meta.extraModules;
+          };
     };
   };
 }
