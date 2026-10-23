@@ -8,14 +8,14 @@ let
     isString
     pathExists
     traceVerbose
-    filter
     mapAttrs
     attrNames
     all
     elem
+    concatLists
     ;
 
-  inherit (lib) mapAttrsToList;
+  inherit (lib) mapAttrsToList filterAttrs;
   inherit (self) lazyMerge;
 in
 {
@@ -65,45 +65,60 @@ in
     callBuilders =
       inputs: outputs: burrow:
       let
-        builders = (filter (builder: builder.enable) (attrValues burrow.builders));
+        builders = (filterAttrs (_: builder: builder.enable) burrow.builders);
 
         discoveryFn =
           b:
           let
-            required = attrNames {
-              inputs = true;
-              outputs = true;
-              modules = true;
-              extraSpecialArgs = true;
-              dir = true;
-            };
+            args = lib.functionArgs b.discoveryFunction;
+            allowed = [
+              "inputs"
+              "outputs"
+              "modules"
+              "extraSpecialArgs"
+              "dir"
+            ];
           in
-          if (all (x: elem x required) (attrNames (builtins.functionArgs b.discoveryFunction.__functor))) then
+          if args ? dir && (all (x: elem x allowed) (attrNames args)) then
             b.discoveryFunction
           else
-            throw "Invalid discovery function for ${b.name}";
+            throw ''
+              Invalid discovery function for ${b.name}
+              Expected arguments: ${toString allowed}
+              Got arguments: ${toString (attrNames args)}
+            '';
 
-        builtOutputs = concatMap (
-          builder:
-          let
-            discovered = concatMap (
-              dir:
-              attrValues (
-                (discoveryFn builder) {
-                  inherit dir inputs outputs;
-                  inherit (builder) modules extraSpecialArgs;
-                }
-              )
-            ) (attrValues (normalizeSearchPaths burrow.root builder.searchPaths));
-          in
-          concatMap (targetCtx: mapAttrsToList (_: f: f targetCtx) builder.buildFunctions) discovered
+        discovered = mapAttrs (
+          key: builder:
+          mapAttrs (
+            _: dir:
+            (discoveryFn builder) {
+              inherit dir inputs outputs;
+              inherit (builder) modules extraSpecialArgs;
+            }
+          ) (normalizeSearchPaths burrow.root builder.searchPaths)
         ) builders;
+
+        flattenContexts = perPath: concatMap attrValues (attrValues perPath);
+
+        builtOutputs = concatLists (
+          mapAttrsToList (
+            key: builder:
+            concatMap (ctx: mapAttrsToList (_: f: f ctx) builder.buildFunctions) (
+              flattenContexts discovered."${key}"
+            )
+          ) builders
+        );
 
         aggregateInputs = foldl' self.lazyMerge { } builtOutputs;
+        aggregateContext = {
+          outputs = aggregateInputs;
+          inherit discovered;
+        };
 
         aggregateOutputs = concatMap (
-          builder: mapAttrsToList (_: f: f aggregateInputs) builder.aggregateFunctions
-        ) builders;
+          builder: mapAttrsToList (_: f: f aggregateContext) builder.aggregateFunctions
+        ) (attrValues builders);
       in
       foldl' lazyMerge { } (builtOutputs ++ aggregateOutputs);
   };

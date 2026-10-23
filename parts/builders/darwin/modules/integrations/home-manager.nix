@@ -1,4 +1,9 @@
-{ lib, inputs, ... }:
+{
+  config,
+  lib,
+  inputs,
+  ...
+}:
 
 let
   inherit (lib) mkOption mkEnableOption types;
@@ -64,18 +69,12 @@ in
       default = { };
       description = ''
         An attribute set mapping names to home-manager modules.
-        To import users from the flake structure use importUsers instead.
       '';
     };
 
-    importUsers = mkOption {
-      type = listOf types.str;
-      default = [ ];
-      description = ''
-        An list of users to import from the flake structure.
-
-        for each name, the configuration at homeConfigurations.<name> will be imported.
-      '';
+    homeManagerModule = mkOption {
+      type = types.deferredModule;
+      default = config.home-manager.darwinModules.default;
     };
   };
 }

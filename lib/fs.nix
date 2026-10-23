@@ -65,4 +65,15 @@ in
     Resolves all relative paths against an absolute path and returns all names that exist.
   */
   fs.allPresent = names: dir: attrNames (filterAttrs (name: _: elem name names) (readDir dir));
+
+  /**
+    # `allExcept`
+
+    ```
+      allExcept :: [ String ] -> Path -> [ String ]
+    ```
+
+    Returns all names in a directory except for those specified in an exclusion list.
+  */
+  fs.allExcept = names: dir: attrNames (filterAttrs (name: _: !(elem name names)) (readDir dir));
 }

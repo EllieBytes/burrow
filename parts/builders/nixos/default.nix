@@ -1,91 +1,143 @@
 {
+  burrow,
   config,
   lib,
+  inputs,
   ...
 }:
 
 let
+  nixpkgs = config.burrow.nixpkgs.nixpkgs;
+
   inherit (builtins)
     pathExists
-    listToAttrs
-    match
+    filter
+    foldl'
     ;
 
-  inherit (lib) mkOption types optionals;
+  inherit (lib)
+    mkOption
+    types
+    optionals
+    ;
 
-  re = "^([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9\\..-]+)";
-  isBound = name: (match re name) != null;
-  bestUser =
-    hostname: want:
-    if (isBound want) then
-      config.flake.homeConfigurations."${want}" or throw "${want} does not exist."
-    else if config.flake.homeConfigurations ? "${want}@${hostname}" then
-      config.flake.homeConfigurations."${want}@${hostname}"
-    else
-      config.flake.homeConfigurations."${want}" or throw "${want} does not exist.";
+  inherit (burrow.lib.fs) allPresent intoPaths;
 in
 {
-  config.burrow.builders.nixos = {
-    modules = [ ./modules ];
+  config.burrow.builders.nixos =
+    { config, ... }:
+    let
+      cfg = config;
+    in
+    {
+      modules = [ ./modules ];
 
-    searchPaths = lib.mkIf config.burrow.builders.nixos.settings.useDefaultSearchPaths {
-      nixosConfigurations = "nixosConfigurations";
-      hosts = "hosts";
-      systems = "systems";
-      nixos = "nixos";
-    };
-
-    settingsModules = [
-      {
-        options.useDefaultSearchPaths = mkOption {
-          type = types.bool;
-          default = true;
-          example = false;
-          description = ''
-            Whether to use default search paths if they are present.
-            Cuts down on boilerplate.
-          '';
-        };
-      }
-    ];
-
-    buildFunctions.nixos =
-      {
-        name,
-        meta,
-        path,
-        ...
-      }:
-      {
-        nixosConfigurations."${name}" = meta.advanced.systemFn {
-          inherit (meta) system extraModules;
-
-          modules = [
-            (if pathExists (path + "/configuration.nix") then (path + "/configuration.nix") else { })
-          ]
-          ++ (optionals meta.home-manager.enable [
-            meta.home-manager.home-manager.nixosModules.home-manager
-            ({ config, ... }: {
-              home-manager = {
-                inherit (meta.home-manager) enable useGlobalPkgs useUserPackages;
-                users =
-                  let
-                    imported = (
-                      listToAttrs (
-                        map (user: {
-                          name = user;
-                          value = bestUser config.networking.hostName user;
-                        }) meta.home-manager.importUsers
-                      )
-                    );
-                  in
-                  imported // meta.home-manager.users;
-              };
-            })
-          ]);
-
-          specialArgs = { } // meta.extraSpecialArgs;
-        };
+      searchPaths = lib.mkIf cfg.settings.useDefaultSearchPaths {
+        nixosConfigurations = "nixosConfigurations";
+        hosts = "hosts";
+        systems = "systems";
+        nixos = "nixos";
       };
-  };
+
+      extraSpecialArgs = {
+        inherit nixpkgs;
+      };
+
+      settingsModules = [
+        {
+          options.useDefaultSearchPaths = mkOption {
+            type = types.bool;
+            default = true;
+            example = false;
+            description = ''
+              Whether to use default search paths if they are present.
+              Cuts down on boilerplate.
+            '';
+          };
+        }
+      ];
+
+      buildFunctions.nixos =
+        {
+          name,
+          meta,
+          path,
+          ...
+        }:
+        let
+          hm = meta.home-manager;
+
+          base = { lib, ... }: {
+            networking.hostName = lib.mkDefault meta.hostName;
+            nixpkgs.config = lib.mkIf (meta.nixpkgs.config != { }) meta.nixpkgs.config;
+            nixpkgs.overlays = lib.mkIf (meta.nixpkgs.overlays != [ ]) meta.nixpkgs.overlays;
+          };
+
+          hmModules = optionals hm.enable [
+            (
+              if hm.home-manager == null then
+                throw "burrow: host '${name}' uses home-manager but no 'home-manager' input was found"
+              else
+                hm.home-manager.nixosModules.home-manager
+            )
+            {
+              home-manager = {
+                inherit (hm) useGlobalPkgs useUserPackages extraSpecialArgs;
+                sharedModules = hm.modules;
+                users = hm.users;
+              };
+            }
+          ];
+
+          foundModules = intoPaths (allPresent meta.files path) path;
+
+          # Integrations.
+          agenixModules = optionals meta.agenix.enable [
+            meta.agenix.agenixModule
+            {
+              environment.systemPackages = [ meta.agenix.agenix.packages."${meta.system}".agenix ];
+            }
+          ];
+
+          diskoEnabled = meta.disko.enable || (meta.disko.automatic && (pathExists (path + "/disk.nix")));
+          diskoModules = optionals diskoEnabled (
+            [
+              meta.disko.diskoModule
+            ]
+            ++ meta.disko.extraModules
+          );
+
+          # Build special args.
+          builtSpecialArgs = foldl' (a: b: a // b) { } (
+            filter (x: x != null) [
+              {
+                inherit (meta) modulesPath;
+                inherit inputs;
+                inherit (config) flake;
+              }
+              (
+                if meta.agenix.enable && (meta.agenix.secretsPath != null) then
+                  { inherit (meta.agenix) secretsPath; }
+                else
+                  null
+              )
+            ]
+          );
+          specialArgs = builtSpecialArgs // meta.extraSpecialArgs;
+        in
+        {
+          nixosConfigurations."${name}" = meta.advanced.systemFn {
+            inherit specialArgs;
+            inherit (meta) system extraModules;
+
+            modules = [
+              base
+            ]
+            ++ foundModules
+            ++ hmModules
+            ++ agenixModules
+            ++ diskoModules;
+          };
+        };
+    };
 }

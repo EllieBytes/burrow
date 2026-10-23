@@ -8,7 +8,6 @@ let
     filter
     listToAttrs
     pathExists
-    warn
     match
     readDir
     elemAt
@@ -71,11 +70,11 @@ rec {
     # `deferMeta`
 
     ```
-      deferMeta :: Path -> DeferredModule
+      deferMeta :: (NullOr Path) -> (NullOr DeferredModule)
     ```
 
-    Accepts a path to a Nix or TOML file (The two accepted meta formats).
-    Loads whichever it finds.
+    Accepts a path to a Nix or TOML file.
+    Loads whichever it finds, null if none.
 
     (NOTE: it is the caller's job to handle the case where there is both a meta.nix and meta.toml/meta.tml)
   */
@@ -88,12 +87,74 @@ rec {
         in
         if m == null then "" else elemAt m 0;
     in
-    if ext == "nix" then
-      (import file)
-    else if ext == "toml" || ext then
-      (fromTOML (readFile file))
+    if pathExists file then
+      if isNull file then
+        null
+      else if ext == "nix" then
+        (import file)
+      else if ext == "toml" || ext then
+        (fromTOML (readFile file))
+      else
+        null
     else
-      throw "Invalid meta extension, expected *.nix | *.toml got .${ext}";
+      null;
+
+  /**
+    # `flatDisccoverByFile`
+
+    ```
+      flatDiscoverByFile :: DiscoveryArgs -> { \${name} :: { name :: String, path :: String, top :: String } }
+    ```
+
+    Discovers files, does not take or evaluate a meta.nix at all.
+  */
+  flatDiscoverByFile =
+    { dir, ... }:
+    let
+      nixFiles = attrNames (
+        filterAttrs (
+          name: kind:
+          ((match "^(.+)\\.nix$" name) != null)
+          && (kind == "regular" || kind == "symlink")
+          && (!isHidden name)
+          && (name != "meta.nix")
+        ) (readDir dir)
+      );
+
+      toName = fname: elemAt (match "^(.+)\\.nix$" fname) 0;
+
+      all = map (file: {
+        name = toName file;
+        value = {
+          top = dir;
+          path = dir + "/${file}";
+          name = toName file;
+        };
+      }) nixFiles;
+    in
+    if dirIgnored dir then { } else listToAttrs all;
+
+  /**
+    # `metaFileWithin`
+
+    ```
+      metaFileWithin :: (Path -> NullOr Path)
+    ```
+
+    Returns the found meta file path or null in the following order
+
+    1. `meta.nix`
+    2. `meta.toml`
+    3. null
+  */
+  metaFileWithin =
+    dir:
+    if (pathExists (dir + "/meta.nix")) then
+      (dir + "/meta.nix")
+    else if (pathExists (dir + "/meta.toml")) then
+      (dir + "/meta.toml")
+    else
+      null;
 
   /**
     # `discoverHybrid`
@@ -144,7 +205,12 @@ rec {
       dir,
     }:
     let
-      dlMeta = (if pathExists (dir + "/meta.nix") then import (dir + "/meta.nix") else { });
+      metas = filter (x: !isNull x) (
+        map deferMeta [
+          (dir + "/meta.nix")
+          (dir + "/meta.toml")
+        ]
+      );
 
       nixFiles = attrNames (
         filterAttrs (
@@ -173,7 +239,7 @@ rec {
                 extraSpecialArgs
                 ;
 
-              modules = modules ++ [ dlMeta ];
+              modules = modules ++ metas;
             }).config;
         };
       }) nixFiles;
@@ -199,16 +265,22 @@ rec {
       dir,
     }:
     let
-      topLevel = if pathExists (dir + "/meta.nix") then (import (dir + "/meta.nix")) else { };
+      topMetas = filter (x: !isNull x) (
+        map deferMeta [
+          (dir + "/meta.nix")
+          (dir + "/meta.toml")
+        ]
+      );
 
       doPath =
         subdir: name:
         let
-          found =
-            if pathExists (subdir + "/meta.nix") then
-              import (subdir + "/meta.nix")
-            else
-              warn "No meta.nix found for item ${name} at ${subdir}" { };
+          metas = filter (x: !isNull x) (
+            map deferMeta [
+              (subdir + "/meta.nix")
+              (subdir + "/meta.toml")
+            ]
+          );
 
           meta =
             (evalMeta {
@@ -219,10 +291,7 @@ rec {
                 extraSpecialArgs
                 ;
 
-              modules = modules ++ [
-                topLevel
-                found
-              ];
+              modules = modules ++ topMetas ++ metas;
             }).config;
         in
         if dirIgnored subdir then

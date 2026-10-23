@@ -1,13 +1,19 @@
 {
+  name,
   config,
   lib,
-  inputs,
+  nixpkgs,
   ...
 }:
 
 let
   inherit (lib) mkOption types;
-  inherit (types) listOf functionTo lazyAttrsOf;
+  inherit (types)
+    listOf
+    functionTo
+    lazyAttrsOf
+    nullOr
+    ;
 
   markAdvanced =
     desc:
@@ -28,16 +34,45 @@ let
 in
 {
   imports = [
-    ./home-manager.nix
+    ./integrations
   ];
 
   options = {
+    name = mkOption {
+      type = types.str;
+      default = name;
+      description = ''
+        Name of this host.
+      '';
+    };
+
+    hostName = mkOption {
+      type = types.str;
+      default = config.name;
+      description = ''
+        Hostname of this host.
+        Mapped to `networking.hostName`
+      '';
+    };
+
     system = mkOption {
       type = types.str;
       default = builtins.currentSystem;
       example = "aarch64-linux";
       description = ''
         The system (host platform) for this system.
+      '';
+    };
+
+    files = mkOption {
+      type = listOf types.str;
+      default = [
+        "default.nix"
+        "configuration.nix"
+        "hardware-configuration.nix"
+      ];
+      description = ''
+        Files in the host directory to import automatically.
       '';
     };
 
@@ -57,6 +92,14 @@ in
       '';
     };
 
+    modulesPath = mkOption {
+      type = nullOr types.path;
+      default = null;
+      description = ''
+        NixOS module path to inject as `modulesPath`.
+      '';
+    };
+
     lib = mkOption {
       type = types.raw;
       default = lib;
@@ -68,9 +111,7 @@ in
     nixpkgs = {
       nixpkgs = mkOption {
         type = types.raw;
-        default =
-          inputs.nixpkgs or throw
-            "No nixpkgs input found. Please add 'nixpkgs' to your inputs, or specify the channel in 'nixpkgs.nixpkgs'";
+        default = nixpkgs;
         example = lib.literalExpression "inputs.nixpkgs";
         description = ''
           The nixpkgs input to use.
@@ -97,20 +138,12 @@ in
       };
     };
 
-    advanced = {
-      systemFn = mkAdvancedOption {
-        type = functionTo types.raw;
-        default = config.nixpkgs.nixpkgs.lib.nixosSystem;
-        description = ''
-          The function used to produce the final system.
-        '';
-      };
-
-      # NOTE: I may need to move this, I'm not quite sure where it fits atm...
-      prefix = mkAdvancedOption {
-        type = listOf types.str;
-        default = [ ];
-      };
+    advanced.systemFn = mkAdvancedOption {
+      type = functionTo types.raw;
+      default = config.nixpkgs.nixpkgs.lib.nixosSystem;
+      description = ''
+        The function used to produce the final system.
+      '';
     };
   };
 }

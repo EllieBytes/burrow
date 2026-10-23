@@ -30,4 +30,6 @@ rec {
       "<function>"
     else
       value;
+
+  matchEnum = val: cases: cases."${val}" or cases.default or throw "No Case for `${val}`";
 }
