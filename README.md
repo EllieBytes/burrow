@@ -42,3 +42,10 @@ L obj1/      : A buildable object. this will be passed to the build functions.
 ```
 
 The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix#L249-l327)
+
+### `meta.nix` And Customizing built objects.
+
+`meta.nix` files are evaluated against the modules defined in each builder's `modules` attribute. 
+Their intended behavior is to be read back by each builder to customize the final object being built.
+
+Eventually this project will have a formal method for searching builder options. but for now such a thing does not exist.
