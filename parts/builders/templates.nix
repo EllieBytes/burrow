@@ -4,7 +4,7 @@
   burrow.builders.templates = { config, ... }: {
     settingsModules = [
       {
-        useDefaultSearchPaths = lib.mkOption {
+        options.useDefaultSearchPaths = lib.mkOption {
           type = lib.types.bool;
           default = true;
           example = false;
