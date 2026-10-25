@@ -1,7 +1,7 @@
-{ burrow, lib, ... }:
+{ lib, ... }:
 
 {
-  burrow.builder.templates = { config, ... }: {
+  burrow.builders.templates = { config, ... }: {
     settingsModules = [
       {
         useDefaultSearchPaths = lib.mkOption {
