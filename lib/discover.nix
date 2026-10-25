@@ -288,8 +288,12 @@ rec {
                 name
                 inputs
                 outputs
-                extraSpecialArgs
                 ;
+
+              extraSpecialArgs = {
+                path = subdir;
+              }
+              // extraSpecialArgs;
 
               modules = modules ++ topMetas ++ metas;
             }).config;
