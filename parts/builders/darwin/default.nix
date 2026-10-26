@@ -93,7 +93,6 @@ in
           builtSpecialArgs = foldl' (a: b: a // b) { } (
             filter (x: x != null) [
               {
-                inherit (meta) modulesPath;
                 inherit inputs;
                 inherit (config) flake;
               }
