@@ -110,14 +110,15 @@ in
         {
           darwinConfigurations."${name}" = meta.advanced.systemFn {
             inherit specialArgs;
-            inherit (meta) system extraModules;
+            inherit (meta) system;
 
             modules = [
               base
             ]
             ++ foundModules
             ++ hmModules
-            ++ agenixModules;
+            ++ agenixModules
+            ++ meta.extraModules;
           };
         };
     };

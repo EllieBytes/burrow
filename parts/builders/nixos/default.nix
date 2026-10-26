@@ -128,7 +128,7 @@ in
         {
           nixosConfigurations."${name}" = meta.advanced.systemFn {
             inherit specialArgs;
-            inherit (meta) system extraModules;
+            inherit (meta) system;
 
             modules = [
               base
@@ -136,7 +136,8 @@ in
             ++ foundModules
             ++ hmModules
             ++ agenixModules
-            ++ diskoModules;
+            ++ diskoModules
+            ++ meta.extraModules;
           };
         };
     };
