@@ -1,4 +1,5 @@
 {
+  inputs,
   burrow,
   config,
   lib,
@@ -21,10 +22,11 @@ let
     meta.advanced.homeFn {
       inherit (meta)
         pkgs
-        extraSpecialArgs
         minimal
         lib
         ;
+
+      extraSpecialArgs = { inherit inputs; } // extraSpecialArgs
 
       modules = [
         ({ lib, ... }: {
