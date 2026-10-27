@@ -26,7 +26,7 @@ let
         lib
         ;
 
-      extraSpecialArgs = { inherit inputs; } // extraSpecialArgs;
+      extraSpecialArgs = { inherit inputs; } // meta.extraSpecialArgs;
 
       modules = [
         ({ lib, ... }: {
