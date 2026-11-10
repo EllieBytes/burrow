@@ -37,3 +37,15 @@ If using default search paths, ensure that they are typed as relative path strin
 Additionally you should make default search paths possible to easily disable, ideally by adding `options.useDefaultSearchPaths` (boolean, default true) to your settingsModules.
 
 ***TEST YOUR BUILDERS*** I am more likely to remove a bad builder than try to fix it myself, so make sure your builder works.
+
+# Adding Discovery functions
+
+Discovery functions *must* respect skipped folders, you should be aware the fact that any directory you enter, including the top search path
+may contain a `.burrow_skip` file. Use `burrow.lib.dirIgnored` to discern.
+
+Unless you have good reason not to, skip hidden files when discovering.
+
+Clearly document the discovery style of your discovery function.
+
+Respect naming conventions (There aren't many as of now)
+- `flat<name>` Does not evaluate a meta file.
