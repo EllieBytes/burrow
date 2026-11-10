@@ -47,6 +47,25 @@ in
           cur
       );
 
+    discoveryFn =
+      b:
+      let
+        args = lib.functionArgs b.discoveryFunction;
+        allowed = [
+          "outputs"
+          "modules"
+          "extraSpecialArgs"
+          "dir"
+        ];
+      in
+      if args ? dir && (all (x: elem x allowed) (attrNames args)) then
+        b.discoveryFunction
+      else
+        throw ''
+          Invalid discovery function for ${b.name}
+          Expected arguments: ${toString allowed}
+          Got arguments: ${toString (attrNames args)}
+        '';
     /**
       # callBuilders
 
@@ -58,47 +77,15 @@ in
       Calls all builders in the specified burrow.
       Produces an attrset of all builder outputs.
 
-      inputs: flake inputs.
-      outputs: location of actual flake outputs.
+      outputs: location of actual outputs.
       burrow: the burrow schema.
+      args: extra arguments.
     */
     callBuilders =
-      inputs: outputs: burrow:
+      outputs: burrow: args:
       let
         builders = (filterAttrs (_: builder: builder.enable) burrow.builders);
-
-        discoveryFn =
-          b:
-          let
-            args = lib.functionArgs b.discoveryFunction;
-            allowed = [
-              "inputs"
-              "outputs"
-              "modules"
-              "extraSpecialArgs"
-              "dir"
-            ];
-          in
-          if args ? dir && (all (x: elem x allowed) (attrNames args)) then
-            b.discoveryFunction
-          else
-            throw ''
-              Invalid discovery function for ${b.name}
-              Expected arguments: ${toString allowed}
-              Got arguments: ${toString (attrNames args)}
-            '';
-
-        discovered = mapAttrs (
-          key: builder:
-          mapAttrs (
-            _: dir:
-            (discoveryFn builder) {
-              inherit dir inputs outputs;
-              inherit (builder) modules extraSpecialArgs;
-            }
-          ) (normalizeSearchPaths burrow.root builder.searchPaths)
-        ) builders;
-
+        discovered = callDiscoveries outputs burrow args;
         flattenContexts = perPath: concatMap attrValues (attrValues perPath);
 
         builtOutputs = concatLists (
@@ -121,5 +108,32 @@ in
         ) (attrValues builders);
       in
       foldl' lazyMerge { } (builtOutputs ++ aggregateOutputs);
+
+    /**
+      # `callDiscoveries`
+
+      ```
+        callDiscoveries :: Attrs -> Attrs -> Attrs -> Attrs
+      ```
+
+      Calls just the discovery step of every enabled builder.
+
+      Produces a structure where
+
+      <builder_name>.<builder_search_path>.<discovered_name> = <target_context>
+    */
+    callDiscoveries =
+      outputs: burrow: args:
+      mapAttrs (
+        key: builder:
+        mapAttrs (
+          _: dir:
+          (discoveryFn builder) {
+            inherit dir outputs;
+            inherit (builder) modules;
+            extraSpecialArgs = args // builder.extraSpecialArgs;
+          }
+        ) (normalizeSearchPaths burrow.root builder.searchPaths)
+      ) (filterAttrs (_: builder: builder.enable) burrow.builders);
   };
 }

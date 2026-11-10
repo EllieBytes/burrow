@@ -1,5 +1,7 @@
+{ inputs, ... }:
+
 {
-  perSystem = { pkgs, ... }: {
+  perSystem = { pkgs, system, ... }: {
     devshells.default = {
       packages = with pkgs; [
         # General
@@ -12,6 +14,7 @@
         nixfmt
         package-version-server
         statix
+        inputs.nixt.packages."${system}".default
       ];
     };
 
@@ -22,6 +25,7 @@
         nixfmt
         package-version-server
         statix
+        inputs.nixt.package."${system}".default
       ];
     };
   };

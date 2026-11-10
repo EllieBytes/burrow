@@ -20,6 +20,6 @@ top@{
         inputs ? top.inputs,
         burrow ? config.burrow,
       }:
-      lib.build.callBuilders inputs outputs burrow;
+      lib.build.callBuilders outputs burrow { inherit inputs; };
   };
 }

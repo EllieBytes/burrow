@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve Burrow
+about: Create a report to help us improve or fix Burrow.
 title: ''
 labels: ''
 assignees: EllieBytes
@@ -31,7 +31,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Version**
-Note that Burrow is not currently version pinned, try updating before making an issue.
+Note that Burrow is not currently version pinned, try updating before making an issue as your solution may have been caught in the current release.
 
 Nix Version (`nix --version`): 
 OS: 

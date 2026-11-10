@@ -1,2 +1,5 @@
 fix:
-  statix fix
+    statix fix
+
+test:
+    nixt -v

@@ -1,0 +1,30 @@
+name: "CI Tests for burrow"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository.
+        uses: actions/checkout@v4
+
+      - name: Install Nix.
+        uses: DeterminateSystems/nix-installer-action@v16
+        with:
+          source-tag: "v16"
+
+      - name: check flake inputs & lock.
+        uses: DeterminateSystems/flake-checker-action@v9
+
+      - name: Verify formatting.
+        run: nix fmt -- --check
+
+      - name: Run unit tests
+        run: nix run github:nix-community/nixt

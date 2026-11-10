@@ -1,8 +1,8 @@
 {
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
   inputs.home-manager.url = "github:nix-community/home-manager";
   inputs.flake-parts.url = "github:hercules-ci/flake-parts";
-  inputs.burrow.url = ./..;
+  inputs.burrow.url = ./../..;
 
   outputs =
     inputs:
@@ -17,7 +17,5 @@
       ];
 
       burrow.root = ./.;
-      burrow.builders.overlays.settings.combineOverlays = true;
-      burrow.builders.overlays.settings.combinedOverlayName = "combined";
     };
 }

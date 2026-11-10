@@ -35,7 +35,6 @@ rec {
     ```
       evalMeta :: {
         name :: String,
-        inputs :: Attrs,
         outputs :: Attrs,
         modules :: [ DeferredModule ],
         extraSpecialArgs :: Attrs
@@ -47,7 +46,6 @@ rec {
   evalMeta =
     {
       name ? "",
-      inputs ? { },
       outputs ? { },
       modules ? [ ],
       extraSpecialArgs ? { },
@@ -59,10 +57,8 @@ rec {
         inherit
           lib
           name
-          inputs
           outputs
           ;
-
       } extraSpecialArgs;
     };
 
@@ -169,12 +165,8 @@ rec {
   */
   discoverHybrid =
     args@{
-      inputs ? { },
-      outputs ? { },
-      modules ? [ ],
-      extraSpecialArgs ? { },
-
       dir,
+      ...
     }:
     let
       unlessIgnored = d: v: if dirIgnored d then { } else v;
@@ -197,7 +189,6 @@ rec {
   */
   discoverByFile =
     {
-      inputs ? { },
       outputs ? { },
       modules ? [ ],
       extraSpecialArgs ? { },
@@ -234,7 +225,6 @@ rec {
             (evalMeta {
               inherit
                 name
-                inputs
                 outputs
                 extraSpecialArgs
                 ;
@@ -257,7 +247,6 @@ rec {
   */
   discover =
     {
-      inputs ? { },
       outputs ? { },
       modules ? [ ],
       extraSpecialArgs ? { },
@@ -286,7 +275,6 @@ rec {
             (evalMeta {
               inherit
                 name
-                inputs
                 outputs
                 ;
 

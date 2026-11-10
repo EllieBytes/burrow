@@ -1,4 +1,0 @@
-{
-  namespace = "nixosModules";
-  scope = "default";
-}

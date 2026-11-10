@@ -8,8 +8,9 @@
 
     devshell.url = "github:numtide/devshell";
     devshell.inputs.nixpkgs.follows = "nixpkgs";
-    nix-unit.url = "github:nix-community/nix-unit";
     treefmt-nix.url = "github:numtide/treefmt-nix";
+
+    nixt.url = "github:nix-community/nixt";
   };
 
   outputs =
