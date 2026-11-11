@@ -23,5 +23,8 @@ jobs:
       - name: check flake inputs & lock.
         uses: DeterminateSystems/flake-checker-action@v9
 
+      - name: Verify formatting.
+        run: nix fmt -- --ci
+
       - name: Run unit tests
-        run: nix run github:nix-community/nixt
+        run: nix run github:nix-community/nixt -- -v

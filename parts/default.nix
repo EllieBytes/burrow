@@ -9,7 +9,6 @@ top@{
   imports = [
     ./options.nix
     ./build.nix
-    ./present.nix
   ];
 
   _module.args.burrow = rec {

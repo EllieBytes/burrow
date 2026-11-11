@@ -17,6 +17,7 @@ in
   flake.__nixt = grow {
     blocks = allTests [
       ./helpers.nix
+      ./files.nix
     ];
   };
 }
