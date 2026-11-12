@@ -3,6 +3,8 @@
 let
   inherit (builtins)
     attrValues
+    hasAttr
+    isAttrs
     concatMap
     foldl'
     isString
@@ -15,8 +17,7 @@ let
     concatLists
     ;
 
-  inherit (lib) mapAttrsToList filterAttrs;
-  inherit (self) lazyMerge;
+  inherit (lib) mapAttrsToList filterAttrs genAttrs;
 in
 {
   build = rec {
@@ -97,7 +98,7 @@ in
           ) builders
         );
 
-        aggregateInputs = foldl' self.lazyMerge { } builtOutputs;
+        aggregateInputs = assemble builtOutputs;
         aggregateContext = {
           outputs = aggregateInputs;
           inherit discovered;
@@ -107,7 +108,7 @@ in
           builder: mapAttrsToList (_: f: f aggregateContext) builder.aggregateFunctions
         ) (attrValues builders);
       in
-      foldl' lazyMerge { } (builtOutputs ++ aggregateOutputs);
+      assemble (builtOutputs ++ aggregateOutputs);
 
     /**
       # `callDiscoveries`
@@ -135,5 +136,52 @@ in
           }
         ) (normalizeSearchPaths burrow.root builder.searchPaths)
       ) (filterAttrs (_: builder: builder.enable) burrow.builders);
+
+    /**
+      # `assemble`
+
+      ```
+        assemble :: [Attrs] -> Attrs
+      ```
+
+      Assembles and merges a list of outputs.
+
+      Currently counts leaves as any non attrset, derivation, or attrset containing the following key.
+
+      - _type
+      - __functor
+      - outpath
+    */
+    assemble =
+      outputs:
+      let
+        mergeOutputs =
+          lhs: rhs:
+          if isAttrs lhs && isAttrs rhs then
+            let
+              allKeys = genAttrs (attrNames lhs ++ attrNames rhs) (x: x);
+            in
+            if lhs ? _type || rhs ? _type then
+              rhs
+            else if (lib.isDerivation lhs) || (lib.isDerivation rhs) then
+              rhs
+            else if lhs ? __functor || rhs ? __functor then
+              rhs
+            else if lhs ? outPath || rhs ? outPath then
+              rhs
+            else
+              mapAttrs (
+                k: _:
+                if hasAttr k lhs && hasAttr k rhs then
+                  mergeOutputs lhs."${k}" rhs."${k}"
+                else if hasAttr k lhs then
+                  lhs."${k}"
+                else
+                  rhs."${k}"
+              ) allKeys
+          else
+            rhs;
+      in
+      foldl' mergeOutputs { } outputs;
   };
 }

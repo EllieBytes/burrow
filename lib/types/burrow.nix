@@ -11,7 +11,12 @@ let
 
   mkPkgs =
     nixpkgs: config: overlays: system:
-    { };
+    if config == { } && overlays == [ ] then
+      nixpkgs.legacyPackages.${system}
+    else
+      import nixpkgs {
+        inherit system config overlays;
+      };
 in
 lib.types.submodule (
   { config, ... }: {
