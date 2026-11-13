@@ -29,7 +29,7 @@ in
             inherit (eval) options;
           };
         in
-        doc.commonMark;
+        doc.optionsCommonMark;
 
       builderDocs = mapAttrs (_: builder: (docBuilder builder)) burrow.builders;
     in
