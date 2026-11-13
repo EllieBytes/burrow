@@ -33,7 +33,7 @@ top@{
 
   flake.burrow = burrowLib.build.present config.flake config.burrow { inherit inputs; };
 
-  flake.packages = lib.genAttrs config.flake.systems (system: {
+  flake.packages = lib.genAttrs config.burrow.systems (system: {
     burrow.doc = burrowLib.document config.flake config.burrow { inherit inputs; } system;
   });
 }
