@@ -1,7 +1,7 @@
 # Burrow
 <img src="assets/logo.svg" width="256" height="256">
 
-Burrow is an auto-discovery framework for Nix flakes, designed to be both easily usable and nearly infinitely extensible.
+Burrow is a general purpose auto-discovery framework ~~for Nix flakes~~ usable with Flakes, designed to be both easily usable and nearly infinitely extensible.
 
 Burrow is built to solve nearly every problem I have with flakes & existing auto-discovery systems. 
 
@@ -19,7 +19,7 @@ Burrow revolves around 1 major primitive, builders.
 Builders are the part that turns discovered inputs into usable flake outputs.
 
 Builders in burrow:
-* Define build functions to turn discovered items into flake-outputs.
+* Define build functions to turn discovered items into outputs.
 * Define aggregate functions to manipulate all outputs into one or more if needed.
 * Define modules, usually containing just options that will be evaluated the meta.nix being evaluated.
 * Define settings (optionally) to allow the entire builder to be configured.
@@ -30,7 +30,7 @@ The function that discovers buildable inputs however can be changed. (Burrow wil
 
 ### Discovery.
 
-In its default state, all builders will use the [`lib.discover`](lib/discover.nix#L249-L327) function.
+In its default state, all builders will use the [`lib.discover`](lib/discover.nix) function.
 This function crawls the search paths like so.
 
 ```
@@ -41,7 +41,7 @@ L obj1/      : A buildable object. this will be passed to the build functions.
 | ...        : This patten can continue on with subdirectories of the search path being the locations of buildable objects.
 ```
 
-The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix#L249-l327)
+The discovery function can be changed, however it ***MUST*** take in the same arguments as [`lib.discover`](lib.discover.nix)
 
 ### `meta.nix` And Customizing built objects.
 
