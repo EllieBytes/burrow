@@ -14,14 +14,14 @@ top@{
   ];
 
   _module.args.burrow = rec {
-    lib = burrowLib;
+    lib' = burrowLib;
     build =
       {
         outputs ? config.flake,
         inputs ? top.inputs,
         burrow ? config.burrow,
       }:
-      lib.build.callBuilders outputs burrow { inherit inputs; };
+      lib'.build.callBuilders outputs burrow { inherit inputs; };
   };
 
   burrow.nixpkgs.nixpkgs = lib.mkDefault (
@@ -30,4 +30,6 @@ top@{
         No `nixpkgs` input found. Please add `nixpkgs` to your inputs or specify burrow.nixpkgs.nixpkgs.
     '')
   );
+
+  flake.burrow = burrowLib.present config.burrow;
 }
