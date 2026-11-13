@@ -24,7 +24,7 @@ top@{
       lib.build.callBuilders outputs burrow { inherit inputs; };
   };
 
-  config.burrow.nixpkgs.nixpkgs = lib.mkDefault inputs.nixpkgs or throw ''
+  burrow.nixpkgs.nixpkgs = lib.mkDefault inputs.nixpkgs or throw ''
     burrow/flake-parts:
       No `nixpkgs` input found. Please add `nixpkgs` to your inputs or specify burrow.nixpkgs.nixpkgs.
   '';
