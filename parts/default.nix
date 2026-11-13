@@ -31,7 +31,7 @@ top@{
     '')
   );
 
-  flake.burrow = burrowLib.build.present config.burrow;
+  flake.burrow = burrowLib.build.present config.flake config.burrow { inherit inputs; };
 
   perSystem = { system, ... }: {
     packages.burrow.doc = burrowLib.document config.flake config.burrow { inherit inputs; } system;
