@@ -113,7 +113,6 @@ rec {
           ((match "^(.+)\\.nix$" name) != null)
           && (kind == "regular" || kind == "symlink")
           && (!isHidden name)
-          && (name != "meta.nix")
         ) (readDir dir)
       );
 

@@ -1,3 +1,0 @@
-(B) Add `modules` builder.
-(C) Add `checks` builder.
-(E) Make the discovery API more robust and defined, allowing generic crawlers as well as full discoveries.
