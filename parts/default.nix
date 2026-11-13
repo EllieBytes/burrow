@@ -14,14 +14,14 @@ top@{
   ];
 
   _module.args.burrow = rec {
-    lib' = burrowLib;
+    lib = burrowLib;
     build =
       {
         outputs ? config.flake,
         inputs ? top.inputs,
         burrow ? config.burrow,
       }:
-      lib'.build.callBuilders outputs burrow { inherit inputs; };
+      burrowLib.build.callBuilders outputs burrow { inherit inputs; };
   };
 
   burrow.nixpkgs.nixpkgs = lib.mkDefault (
