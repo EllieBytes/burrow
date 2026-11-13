@@ -34,6 +34,9 @@ rec {
 
     Lazily merges two attribute sets recursively.
     NOTE: this function stops at attrsets with `_type` and at derivations.
+
+    > [!WARNING]
+    > This function is deprecated
   */
   lazyMerge =
     lhs: rhs:

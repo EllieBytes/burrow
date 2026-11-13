@@ -1,4 +1,4 @@
-{ lib, self }:
+{ lib, ... }:
 
 let
   inherit (builtins)
@@ -155,6 +155,7 @@ in
     assemble =
       outputs:
       let
+        # Really just stricter lazyMerge.
         mergeOutputs =
           lhs: rhs:
           if isAttrs lhs && isAttrs rhs then

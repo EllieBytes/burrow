@@ -75,7 +75,7 @@ in
 
     Returns all names in a directory except for those specified in an exclusion list.
   */
-  fs.allExcept = names: dir: attrNames (filterAttrs (name: _: !(elem name names)) (readDir dir));
+  fs.allExcept = names: dir: attrNames (filterAttrs (name: _: (!elem name names)) (readDir dir));
 
   fs.nixFiles = dir: attrNames (filterAttrs (name: _: (match "^.*\\.nix$") name != null));
 }

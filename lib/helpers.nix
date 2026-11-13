@@ -41,4 +41,5 @@ rec {
     Works much like a match statement in other languages, but uses conditional selection from attrsets.
   */
   matchEnum = val: cases: cases."${val}" or (cases.default or (throw "No Case for `${val}`"));
+
 }
