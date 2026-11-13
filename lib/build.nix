@@ -72,7 +72,7 @@ in
       # callBuilders
 
       ```
-        callBuilders :: Attrs -> Attrs -> Attrs -> Attrs
+        callBuilders :: Attrs -> Burrow -> Attrs -> Attrs
       ```
 
       Entrypoint for the build engine.
@@ -115,7 +115,7 @@ in
       # `callDiscoveries`
 
       ```
-        callDiscoveries :: Attrs -> Attrs -> Attrs -> Attrs
+        callDiscoveries :: Attrs -> Burrow -> Attrs -> Attrs
       ```
 
       Calls just the discovery step of every enabled builder.
@@ -185,5 +185,38 @@ in
             rhs;
       in
       foldl' mergeOutputs { } outputs;
+
+    /**
+      # `present`
+
+      ```
+        present :: Attrs -> Burrow -> Attrs -> Attrs
+      ```
+
+      Creates a presentation of the current build. This is used for exports, and metadata
+    */
+    present =
+      outputs: burrow: args:
+      let
+        discovered = callDiscoveries outputs burrow args;
+        extension = {
+          inherit (burrow)
+            builders
+            ;
+        };
+      in
+      {
+        meta = {
+          inherit (burrow) description;
+        };
+
+        inherit discovered extension;
+        inherit (burrow)
+          builders
+          nixpkgs
+          pkgs
+          root
+          ;
+      };
   };
 }

@@ -85,6 +85,27 @@ lib.types.submodule (
           Systems for this burrow.
         '';
       };
+
+      description = mkOption {
+        type = types.str;
+        default = "This burrow does not provide a description";
+        example = "My systems";
+      };
+
+      extend = mkOption {
+        type = types.functionTo self.types.burrow;
+        readOnly = true;
+        default = self.extend config;
+        description = ''
+          A function to create an extension of this burrow.
+
+          ```
+            extend :: Either Burrow BurrowExt -> Burrow
+          ```
+
+          For now just merges builders.
+        '';
+      };
     };
   }
 )

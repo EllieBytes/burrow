@@ -1,7 +1,11 @@
-{ ... }:
+{ lib, ... }:
 
 let
   inherit (builtins)
+    length
+    attrNames
+    elem
+    foldl'
     mapAttrs
     isAttrs
     isFunction
@@ -42,4 +46,28 @@ rec {
   */
   matchEnum = val: cases: cases."${val}" or (cases.default or (throw "No Case for `${val}`"));
 
+  extend =
+    prev: exten:
+    let
+      ext = if exten ? extension then exten.extension else exten;
+      origBuilders = attrNames prev.builders;
+      builderConflicts = foldl' (conf: b: elem b origBuilders) [ ] (attrNames ext.builders);
+      mergedBuilders = prev.builders // ext.builders;
+
+      withWarnings =
+        val:
+        let
+          warnBuilderConflicts =
+            if (length builderConflicts) > 0 then
+              lib.warn ''
+                burrow/extend:
+                  Builder conflicts, builders [ ${toString lib} ] conflict with original.
+                  The extension's builders win by default.
+              ''
+            else
+              (x: x);
+        in
+        warnBuilderConflicts val;
+    in
+    withWarnings (prev // { builders = mergedBuilders; });
 }
